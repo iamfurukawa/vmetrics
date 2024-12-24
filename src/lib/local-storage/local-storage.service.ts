@@ -12,6 +12,6 @@ export class LocalStorageService<T> {
         if (!value) {
             return null;
         }
-        JSON.parse(value);
+        return JSON.parse(value);
     }
 }
