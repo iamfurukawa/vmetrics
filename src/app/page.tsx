@@ -189,7 +189,9 @@ export default function Home() {
 			  </TableRow>
 			</TableHeader>
 			<TableBody>
-			  {worklogs.map((worklog) => (
+			  {worklogs
+			  	.sort(DateTimeService.timeSort)
+			  	.map((worklog) => (
 				<TableRow key={worklog.uuid}>
 				  <TableCell className="font-medium">{`${worklog.ticket} - ${worklog.description}`}</TableCell>
 				  <TableCell className="font-medium"> {" "} <Badge variant={ worklog.status === WorklogStatus.PENDING ? "destructive" : "default" }> {worklog.status} </Badge>{" "} </TableCell>

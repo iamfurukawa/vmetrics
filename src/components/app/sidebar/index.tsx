@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { 
   Cloud, 
@@ -32,6 +32,7 @@ import { DialogProject } from "@/components/app/dialog-project";
 import { DialogSignOut } from "@/components/app/dialog-sign-out";
 
 import ProjectService from "@/lib/project/project.service";
+import { Project } from "@/lib/project/project.interface";
 
 const items = [
   {
@@ -44,7 +45,11 @@ const items = [
 export function AppSidebar() {
   const [isDialogProjectOpened, setDialogProjectOpened] = useState(false);
   const [isDialogSignOutOpened, setDialogSignOutOpened] = useState(false);
-  const activeProject = ProjectService.getActive();
+  const [activeProject, setActiveProject] = useState<Project | null>(ProjectService.getActive());
+
+  useEffect(() => {
+    setActiveProject(ProjectService.getActive());
+  }, [isDialogProjectOpened, isDialogSignOutOpened]);
 
   return (
     <>

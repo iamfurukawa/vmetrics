@@ -110,7 +110,7 @@ export function DialogWorklog({
 
   return (
     <Dialog open={isOpened} onOpenChange={setOpened}>
-      <DialogContent>
+      <DialogContent onInteractOutside={(e: any) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle>{worklog ? "Edit" : "Create"} a worklog</DialogTitle>
           <DialogDescription>

@@ -121,7 +121,7 @@ export function DialogProject({ isOpened, setOpened, project }: ProjectProps) {
     <>
       <AlertConfirmAction isOpened={isOpenedConfirmAction} setOpened={setIsOpenedConfirmAction} confirmAction={onDelete} />
       <Dialog open={isOpened} onOpenChange={setOpened} disableOutsideClick>
-        <DialogContent>
+        <DialogContent onInteractOutside={(e: any) => e.preventDefault()}>
           <DialogHeader>
             <DialogTitle>
               {project ? "Edit" : "Create"} a new project

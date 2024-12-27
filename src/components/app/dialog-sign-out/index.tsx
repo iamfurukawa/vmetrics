@@ -37,7 +37,7 @@ export function DialogSignOut({ isOpened, setOpened }: SignOutProps) {
     <>
       <DialogProject isOpened={isDialogProjectOpened} setOpened={setDialogProjectOpened}/>
       <Dialog open={isOpened} onOpenChange={setOpened}>
-        <DialogContent>
+        <DialogContent onInteractOutside={(e: any) => e.preventDefault()}>
           <DialogHeader>
             <DialogTitle>Which project?</DialogTitle>
             <DialogDescription>

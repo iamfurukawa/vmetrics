@@ -28,7 +28,7 @@ export function DialogSelectDate({
 
   return (
     <Dialog open={isOpened} onOpenChange={setOpened}>
-      <DialogContent>
+      <DialogContent onInteractOutside={(e: any) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle>Which date?</DialogTitle>
           <DialogDescription>

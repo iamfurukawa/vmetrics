@@ -40,6 +40,7 @@ class ProjectService {
     allProjects = allProjects.map((p) => ({ ...p, isActive: false }));
     project = { ...project, uuid: uuidv4(), isActive: true };
     this.projectRepository.save([...allProjects, project]);
+    window.location.reload();
   }
 
   deleteBy(uuid: string): void {
