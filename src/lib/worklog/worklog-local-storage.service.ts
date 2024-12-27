@@ -1,20 +1,21 @@
 import { LocalStorage } from "../local-storage/local-storage.interface";
 import { LocalStorageKeys } from "../local-storage/local-storage.keys";
 import { LocalStorageService } from "../local-storage/local-storage.service";
-import { Worklog } from "./worklog.interface";
+import { DailyWorklog } from "./worklog.interface";
 
-export class WorklogLocalStorageService implements LocalStorage<Worklog[]> {
+export class WorklogLocalStorageService implements LocalStorage<DailyWorklog> {
 
-    localStorageService: LocalStorageService<Worklog[]>;
+    localStorageService: LocalStorageService<DailyWorklog>;
     
     constructor() { 
-        this.localStorageService = new LocalStorageService<Worklog[]>();
+        this.localStorageService = new LocalStorageService<DailyWorklog>();
     }
 
-    save(value: Worklog[]): void {
-        this.localStorageService.save(LocalStorageKeys.WORKLOG, value);
+    save(value: DailyWorklog): void {
+        this.localStorageService.save(LocalStorageKeys.DAILY_WORKLOG, value);
     }
-    get(): Worklog[] | null | undefined {
-        return this.localStorageService.get(LocalStorageKeys.WORKLOG);
+    
+    get(): DailyWorklog | null | undefined {
+        return this.localStorageService.get(LocalStorageKeys.DAILY_WORKLOG);
     }
 }

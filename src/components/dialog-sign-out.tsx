@@ -49,7 +49,7 @@ export function DialogSignOut({ isOpened, setOpened }: SignOutProps) {
         isOpened={isDialogProjectOpened}
         setOpened={setDialogProjectOpened}
       />
-      <Dialog open={isOpened} onOpenChange={setOpened} disableOutsideClick>
+      <Dialog open={isOpened} onOpenChange={setOpened}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Which project?</DialogTitle>

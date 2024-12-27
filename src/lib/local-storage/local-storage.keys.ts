@@ -1,4 +1,4 @@
 export enum LocalStorageKeys {
     PROJECT = "project",
-    WORKLOG = "worklog"
+    DAILY_WORKLOG = "daily_worklog"
 }

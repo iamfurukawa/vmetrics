@@ -34,21 +34,22 @@ export interface ProjectProps {
   project?: Project;
 }
 
-const FormSchema = z.object({
-  projectName: z
-    .string()
-    .trim()
-    .nonempty({ message: "Project name cannot be empty." }),
-  jiraApiKey: z
-    .string()
-    .trim()
-    .nonempty({ message: "API Key cannot be empty." }),
-  jiraUrl: z.string().trim().url({ message: "Jira URL must be a valid URL." }),
-  email: z.string().trim().email({ message: "Invalid email address." }),
-});
-
 export function DialogProject({ isOpened, setOpened, project }: ProjectProps) {
   const projectLocalStorageService = new ProjectLocalStorageService();
+
+  const FormSchema = z.object({
+    projectName: z
+      .string()
+      .trim()
+      .nonempty({ message: "Project name cannot be empty." }),
+    jiraApiKey: z
+      .string()
+      .trim()
+      .nonempty({ message: "API Key cannot be empty." }),
+    jiraUrl: z.string().trim().url({ message: "Jira URL must be a valid URL." }),
+    email: z.string().trim().email({ message: "Invalid email address." }),
+  });
+
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {

@@ -30,17 +30,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="dark"
-        >
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <ThemeProvider attribute="class" defaultTheme="dark">
           <SidebarProvider>
             <AppSidebar />
             <SidebarTrigger />
-            <main>{children}</main>
+            <main className="flex-auto p-6">
+              {children}
+            </main>
             <Toaster />
           </SidebarProvider>
         </ThemeProvider>

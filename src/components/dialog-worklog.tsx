@@ -3,6 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { v4 as uuidv4 } from "uuid";
 
 import {
   Dialog,
@@ -17,7 +18,6 @@ import { Button } from "./ui/button";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -25,56 +25,75 @@ import {
 } from "./ui/form";
 
 import { toast } from "@/hooks/use-toast";
-import { Worklog } from "@/lib/worklog/worklog.interface";
+import { Worklog, WorklogStatus } from "@/lib/worklog/worklog.interface";
 import { WorklogLocalStorageService } from "@/lib/worklog/worklog-local-storage.service";
+import { useEffect } from "react";
 
 export interface WorklogProps {
   isOpened: any;
   setOpened: any;
   worklog?: Worklog;
+  date: string;
 }
 
-const FormSchema = z.object({
-  description: z
-    .string()
-    .trim()
-    .nonempty({ message: "Description cannot be empty." }),
-  ticket: z.string().trim().nonempty({ message: "Ticket cannot be empty." }),
-  start: z.string({ message: "Start time cannot be empty." }),
-  end: z.string({ message: "End time cannot be empty." }),
-});
+export function DialogWorklog({
+  isOpened,
+  setOpened,
+  worklog,
+  date,
+}: WorklogProps) {
+  const worklogLocalStorageService = new WorklogLocalStorageService();
 
-export function DialogWorklog({ isOpened, setOpened, worklog }: WorklogProps) {
-  const form = useForm<z.infer<typeof FormSchema>>({
-    resolver: zodResolver(FormSchema),
-    defaultValues: {
-      description: worklog ? worklog.description : "",
-      ticket: worklog ? worklog.ticket : "",
-      start: worklog ? worklog.date.start : "",
-      end: worklog ? worklog.date.end : "",
-    },
+  const FormSchema = z.object({
+    description: z
+      .string()
+      .trim()
+      .nonempty({ message: "Description cannot be empty." }),
+    ticket: z
+      .string()
+      .trim(),
+    start: z.string().trim(),
+    end: z.string().trim(),
   });
+
+  const form = useForm<z.infer<typeof FormSchema>>({
+    resolver: zodResolver(FormSchema)
+  });
+
+  useEffect(() => {
+    form.reset({
+      description: worklog?.description || "",
+      ticket: worklog?.ticket || "",
+      start: worklog?.date?.start || "",
+      end: worklog?.date?.end || "",
+    });
+  }, [worklog, form]);
+
 
   function onSubmit(data: z.infer<typeof FormSchema>) {
     let worklogForm: Worklog = {
+      uuid: uuidv4(),
       description: data.description,
       ticket: data.ticket,
+      status: WorklogStatus.PENDING,
       date: {
         start: data.start,
         end: data.end,
       },
     };
 
+    const worklogs = worklogLocalStorageService.get() || {};
+    if (worklogs.hasOwnProperty(date)) {
+      worklogs[date] = [...worklogs[date], worklogForm];
+    } else {
+      worklogs[date] = [worklogForm];
+    }
+    worklogLocalStorageService.save(worklogs);
+
     toast({
-      description: `Worklog ${
-        worklogForm ? "updated" : "created"
-      } successfully`,
+      description: `Worklog ${worklog ? "updated" : "created"} successfully`,
     });
 
-    setOpened(false);
-  }
-
-  function onDelete() {
     setOpened(false);
   }
 
@@ -88,7 +107,7 @@ export function DialogWorklog({ isOpened, setOpened, worklog }: WorklogProps) {
   };
 
   return (
-    <Dialog open={isOpened} onOpenChange={setOpened} disableOutsideClick>
+    <Dialog open={isOpened} onOpenChange={setOpened}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{worklog ? "Edit" : "Create"} a worklog</DialogTitle>
@@ -123,11 +142,7 @@ export function DialogWorklog({ isOpened, setOpened, worklog }: WorklogProps) {
                       <FormItem>
                         <FormLabel>Card</FormLabel>
                         <FormControl>
-                          <Input
-                            placeholder="E.g. COREP-1234"
-                            {...field}
-                            onChange={handleInputTimeChange}
-                          />
+                          <Input placeholder="E.g. COREP-1234" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>

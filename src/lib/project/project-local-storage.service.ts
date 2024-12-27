@@ -17,6 +17,7 @@ export class ProjectLocalStorageService implements LocalStorage<Project[]> {
         value = value.map(p => ({ ...p, uuid: p.uuid ?? uuidv4() }));
         this.localStorageService.save(LocalStorageKeys.PROJECT, value);
     }
+    
     get(): Project[] | null | undefined {
         return this.localStorageService.get(LocalStorageKeys.PROJECT);
     }
