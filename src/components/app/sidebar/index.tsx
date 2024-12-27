@@ -1,7 +1,13 @@
 "use client";
 import { useState } from "react";
 
-import { Cloud, Settings, ChevronUp, Briefcase, LogOut } from "lucide-react";
+import { 
+  Cloud, 
+  Settings, 
+  ChevronUp, 
+  Briefcase, 
+  LogOut 
+} from "lucide-react";
 
 import {
   Sidebar,
@@ -20,13 +26,13 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "./ui/dropdown-menu";
+} from "@/components/ui/dropdown-menu";
 
-import { ProjectLocalStorageService } from "@/lib/project/project-local-storage.service";
-import { DialogProject } from "./dialog-project";
-import { DialogSignOut } from "./dialog-sign-out";
+import { DialogProject } from "@/components/dialog-project";
+import { DialogSignOut } from "@/components/app/dialog-sign-out";
 
-// Menu items.
+import ProjectService from "@/lib/project/project.service";
+
 const items = [
   {
     title: "Jira Sync",
@@ -38,18 +44,7 @@ const items = [
 export function AppSidebar() {
   const [isDialogProjectOpened, setDialogProjectOpened] = useState(false);
   const [isDialogSignOutOpened, setDialogSignOutOpened] = useState(false);
-
-  const projectLocalStorageService = new ProjectLocalStorageService();
-  const allProjects = projectLocalStorageService.get() || [];
-  const activeProject = allProjects.find((p) => p.isActive);
-
-  function onSettings() {
-    setDialogProjectOpened(true);
-  }
-
-  function onLogOut() {
-    setDialogSignOutOpened(true);
-  }
+  const activeProject = ProjectService.getActive();
 
   return (
     <>
@@ -89,11 +84,11 @@ export function AppSidebar() {
                 side="top"
                 className="w-[--radix-popper-anchor-width]"
               >
-                <DropdownMenuItem onClick={() => onSettings()}>
+                <DropdownMenuItem onClick={() => setDialogProjectOpened(true)}>
                   <Settings />
                   <span>Settings</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onLogOut()}>
+                <DropdownMenuItem onClick={() => setDialogSignOutOpened(true)}>
                   <LogOut />
                   <span>Sign out</span>
                 </DropdownMenuItem>

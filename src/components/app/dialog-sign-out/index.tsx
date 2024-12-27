@@ -1,5 +1,6 @@
 "use client";
-import { useEffect, useState } from "react";
+
+import { useState } from "react";
 
 import {
   Dialog,
@@ -9,53 +10,44 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-import { ProjectLocalStorageService } from "@/lib/project/project-local-storage.service";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "./ui/select";
-import { Button } from "./ui/button";
-import { DialogProject } from "./dialog-project";
+} from "@/components/ui/select";
+
+import { Button } from "@/components/ui/button";
+
+import { DialogProject } from "@/components/dialog-project";
+
+import ProjectService from "@/lib/project/project.service";
 
 export interface SignOutProps {
-  isOpened: any;
-  setOpened: any;
+  isOpened: boolean;
+  setOpened: Function;
 }
 
 export function DialogSignOut({ isOpened, setOpened }: SignOutProps) {
-  const projectLocalStorageService = new ProjectLocalStorageService();
-  let allProjects = projectLocalStorageService.get() || [];
-  const activeProject = allProjects.find((p) => p.isActive);
-  
+  const activeProject = ProjectService.getActive();
   const [isDialogProjectOpened, setDialogProjectOpened] = useState(false);
-
-  function onSelectProject(projectChoosed: string){
-    allProjects = allProjects.map((p) => ({ ...p, isActive: p.uuid === projectChoosed }));
-    projectLocalStorageService.save(allProjects);
-    setOpened(false);
-  }
-
-  function onAddProject() {
-    setOpened(false);
-    setDialogProjectOpened(true);
-  }
 
   return (
     <>
-      <DialogProject
-        isOpened={isDialogProjectOpened}
-        setOpened={setDialogProjectOpened}
-      />
+      <DialogProject isOpened={isDialogProjectOpened} setOpened={setDialogProjectOpened}/>
       <Dialog open={isOpened} onOpenChange={setOpened}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Which project?</DialogTitle>
             <DialogDescription>
               <div className="space-y-6">
-                <Select onValueChange={onSelectProject}>
+                <Select
+                  onValueChange={(uuid: string) => {
+                    ProjectService.setActiveProject(uuid);
+                    setOpened(false);
+                  }}
+                >
                   <SelectTrigger>
                     <SelectValue
                       placeholder={activeProject?.name}
@@ -63,15 +55,21 @@ export function DialogSignOut({ isOpened, setOpened }: SignOutProps) {
                     />
                   </SelectTrigger>
                   <SelectContent>
-                    {allProjects.map((p) => (
-                      <SelectItem key={p.uuid} value={p.uuid} >
-                        {p.name}
+                    {ProjectService.getAll().map((project) => (
+                      <SelectItem key={project.uuid} value={project.uuid}>
+                        {project.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
-                <Button type="button" onClick={() => onAddProject()}>
-                  Add a new Project
+                <Button
+                  type="button"
+                  onClick={() => {
+                    setOpened(false);
+                    setDialogProjectOpened(true);
+                  }}
+                >
+                  Add a new project
                 </Button>
               </div>
             </DialogDescription>

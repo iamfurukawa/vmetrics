@@ -10,13 +10,13 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-import { Button } from "./ui/button";
-import { Calendar } from "./ui/calendar";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
 
 export interface SelectDateProps {
-  isOpened: any;
-  setOpened: any;
-  setSelectedDate: any;
+  isOpened: boolean;
+  setOpened: Function;
+  setSelectedDate: Function;
 }
 
 export function DialogSelectDate({
@@ -36,14 +36,17 @@ export function DialogSelectDate({
               <Calendar
                 mode="single"
                 selected={date}
-                onSelect={setDate}
+                onSelect={(date: Date) => setDate(date || new Date())}
                 className="rounded-md border shadow"
               />
-              <Button type="button" onClick={() => {
+              <Button
+                type="button"
+                onClick={() => {
                   setSelectedDate(format(date, "dd/MM/yyyy"));
                   setOpened(false);
-                }}>
-                Select this date ({format(date, "dd/MM/yyyy")})
+                }}
+              >
+                Select this date {format(date, "(dd/MM/yyyy)")}
               </Button>
             </div>
           </DialogDescription>

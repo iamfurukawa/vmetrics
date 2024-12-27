@@ -21,7 +21,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { DialogProject } from "@/components/dialog-project";
 import { DialogWorklog } from "@/components/dialog-worklog";
-import { DialogSelectDate } from "@/components/dialog-select-date";
+import { DialogSelectDate } from "@/components/app/dialog-select-date";
 
 import { cn } from "@/lib/utils";
 import { Worklog, WorklogStatus } from "@/lib/worklog/worklog.interface";
@@ -31,7 +31,7 @@ import { WorklogLocalStorageService } from "@/lib/worklog/worklog-local-storage.
 
 import { MoreHorizontal, CirclePlus, ChevronLeft, ChevronRight, CalendarIcon, Copy, Trash, Pencil, StepForward, Pause } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-import { AlertConfirmAction } from "@/components/alert-confirm-action";
+import { AlertConfirmAction } from "@/components/app/alert-confirm-action";
 
 export default function Home() {
   const projectLocalStorageService = new ProjectLocalStorageService();
@@ -224,7 +224,7 @@ export default function Home() {
                   <Calendar
                     mode="single"
                     selected={actualDate}
-                    onSelect={setActualDate}
+                    onSelect={(date: Date) => setActualDate(date || new Date())}
                     disabled={(date: Date) =>
                       date < new Date("1900-01-01")
                     }
