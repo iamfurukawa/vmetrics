@@ -28,7 +28,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-import { DialogProject } from "@/components/dialog-project";
+import { DialogProject } from "@/components/app/dialog-project";
 import { DialogSignOut } from "@/components/app/dialog-sign-out";
 
 import ProjectService from "@/lib/project/project.service";

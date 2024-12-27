@@ -20,7 +20,7 @@ import {
 
 import { Button } from "@/components/ui/button";
 
-import { DialogProject } from "@/components/dialog-project";
+import { DialogProject } from "@/components/app/dialog-project";
 
 import ProjectService from "@/lib/project/project.service";
 
@@ -44,7 +44,7 @@ export function DialogSignOut({ isOpened, setOpened }: SignOutProps) {
               <div className="space-y-6">
                 <Select
                   onValueChange={(uuid: string) => {
-                    ProjectService.setActiveProject(uuid);
+                    ProjectService.setActiveBy(uuid);
                     setOpened(false);
                   }}
                 >

@@ -1,9 +1,12 @@
 "use client";
 
+import { useEffect } from "react";
+
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { v4 as uuidv4 } from "uuid";
+import { toast } from "@/hooks/use-toast";
 
 import {
   Dialog,
@@ -13,8 +16,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-import { Input } from "./ui/input";
-import { Button } from "./ui/button";
 import {
   Form,
   FormControl,
@@ -22,16 +23,19 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "./ui/form";
+} from "@/components/ui/form";
 
-import { toast } from "@/hooks/use-toast";
+import { Input } from "@/components/ui/input";
+
+import { Button } from "@/components/ui/button";
+
 import { Worklog, WorklogStatus } from "@/lib/worklog/worklog.interface";
-import { WorklogLocalStorageService } from "@/lib/worklog/worklog-local-storage.service";
-import { useEffect } from "react";
+
+import WorklogService from "@/lib/worklog/worklog.service";
 
 export interface WorklogProps {
-  isOpened: any;
-  setOpened: any;
+  isOpened: boolean;
+  setOpened: Function;
   worklog?: Worklog;
   date: string;
 }
@@ -42,7 +46,6 @@ export function DialogWorklog({
   worklog,
   date,
 }: WorklogProps) {
-  const worklogLocalStorageService = new WorklogLocalStorageService();
 
   const FormSchema = z.object({
     description: z
@@ -82,24 +85,23 @@ export function DialogWorklog({
       },
     };
 
-    const worklogs = worklogLocalStorageService.get() || {};
-    if (worklogs.hasOwnProperty(date)) {
-      worklogs[date] = [...worklogs[date], worklogForm];
+    if (worklog) {
+      WorklogService.updateBy(worklogForm, date, worklog!.uuid!);
     } else {
-      worklogs[date] = [worklogForm];
+      WorklogService.create(worklogForm, date);
     }
-    worklogLocalStorageService.save(worklogs);
-
+    
     toast({
-      description: `Worklog ${worklog ? "updated" : "created"} successfully`,
+      title: `Worklog ${worklog ? `updated` : `created`} successfully`,
+      description: `${worklog ? `${worklog.description}` : `${worklogForm.description}`}`,
     });
 
     setOpened(false);
   }
 
   const handleInputTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let value = e.target.value.replace(/\D/g, ""); // Remove caracteres não numéricos
-    if (value.length >= 3) value = `${value.slice(0, 2)}:${value.slice(2, 4)}`; // Adiciona o `:`
+    let value = e.target.value.replace(/\D/g, "");
+    if (value.length >= 3) value = `${value.slice(0, 2)}:${value.slice(2, 4)}`;
     form.setValue(e.target.name, value, {
       shouldValidate: true,
       shouldDirty: true,
