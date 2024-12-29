@@ -18,4 +18,8 @@ export class ProjectLocalStorageService implements LocalStorage<Project[]> {
     get(): Project[] | null | undefined {
         return this.localStorageService.get(LocalStorageKeys.PROJECT);
     }
+
+    clear(): void {
+        this.localStorageService.clear(LocalStorageKeys.PROJECT);
+    }
 }

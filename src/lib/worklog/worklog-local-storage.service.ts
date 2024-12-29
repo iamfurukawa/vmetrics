@@ -18,4 +18,8 @@ export class WorklogLocalStorageService implements LocalStorage<DailyWorklog> {
     get(): DailyWorklog | null | undefined {
         return this.localStorageService.get(LocalStorageKeys.DAILY_WORKLOG);
     }
+
+    clear(): void {
+        this.localStorageService.clear(LocalStorageKeys.DAILY_WORKLOG);
+    }
 }

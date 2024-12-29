@@ -237,6 +237,15 @@ export default function Home() {
 						}} >
 							<Copy/> Clone to 
 						</DropdownMenuItem>
+
+						{ worklog.status === WorklogStatus.PENDING &&
+							<>
+								<DropdownMenuSeparator/>
+								<DropdownMenuItem onClick={() => {}} >
+									<StepForward/> Sync
+								</DropdownMenuItem>
+							</>
+						}
 					  </DropdownMenuContent>
 					</DropdownMenu>
 				  </TableCell>

@@ -103,12 +103,7 @@ export function DialogProject({ isOpened, setOpened, project }: ProjectProps) {
     if (!shouldDelete) return;
     
     ProjectService.deleteBy(project!.uuid!);
-    const allProjects = ProjectService.getAll();
-
-    if (allProjects.length === 0) {
-      form.reset();
-      return;
-    }
+    form.reset();
 
     toast({
       description: `Project deleted successfully`,

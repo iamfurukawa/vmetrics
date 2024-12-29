@@ -2,11 +2,11 @@
 import { useEffect, useState } from "react";
 
 import { 
-  Cloud, 
+  CloudDownload, 
   Settings, 
   ChevronUp, 
   Briefcase, 
-  LogOut 
+  LogOut,
 } from "lucide-react";
 
 import {
@@ -31,24 +31,31 @@ import {
 import { DialogProject } from "@/components/app/dialog-project";
 import { DialogSignOut } from "@/components/app/dialog-sign-out";
 
+import JiraService from "@/lib/jira/jira.service";
 import ProjectService from "@/lib/project/project.service";
 import { Project } from "@/lib/project/project.interface";
-
-const items = [
-  {
-    title: "Jira Sync",
-    url: "#",
-    icon: Cloud,
-  },
-];
+import WorklogService from "@/lib/worklog/worklog.service";
 
 export function AppSidebar() {
   const [isDialogProjectOpened, setDialogProjectOpened] = useState(false);
   const [isDialogSignOutOpened, setDialogSignOutOpened] = useState(false);
   const [activeProject, setActiveProject] = useState<Project | null>(ProjectService.getActive());
 
+  async function handleDownloadSync() {
+    WorklogService.retrieveLastsTwoWeeksWorklogs();
+  }
+
   useEffect(() => {
-    setActiveProject(ProjectService.getActive());
+    const activeProject = ProjectService.getActive()
+    setActiveProject(activeProject);
+    if(!activeProject)
+      setDialogProjectOpened(true);
+
+    const fetch = async () => {
+      await JiraService.getMyUserId();
+    }
+
+    fetch();
   }, [isDialogProjectOpened, isDialogSignOutOpened]);
 
   return (
@@ -61,16 +68,14 @@ export function AppSidebar() {
           <SidebarGroupLabel>Actions {activeProject ? `for ${activeProject.name}` : ""}</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {items.map((item) => (
-                <SidebarMenuItem key={item.title}>
+                <SidebarMenuItem key="jira-download">
                   <SidebarMenuButton asChild>
-                    <a href={item.url}>
-                      <item.icon />
-                      <span>{item.title}</span>
+                    <a href={'#'} onClick={handleDownloadSync}>
+                      <CloudDownload />
+                      <span>Jira Download</span>
                     </a>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
-              ))}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

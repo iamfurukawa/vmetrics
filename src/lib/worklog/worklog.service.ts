@@ -2,7 +2,8 @@ import { v4 as uuidv4 } from "uuid";
 import { format } from "date-fns";
 
 import { WorklogLocalStorageService } from "./worklog-local-storage.service";
-import { Worklog, WorklogStatus } from "./worklog.interface";
+import { DailyWorklog, Worklog, WorklogStatus } from "./worklog.interface";
+import JiraService from "@/lib/jira/jira.service";
 
 
 class WorklogService {
@@ -63,6 +64,25 @@ class WorklogService {
       }
       return w;
     });
+    this.worklogRepository.save(worklogs);
+  }
+
+  async retrieveLastsTwoWeeksWorklogs() {
+    const worklogKeys = await JiraService.getMyLastsTwoWeeksWorklogs();
+    const worklogDetails = await Promise.all(
+      worklogKeys.map((key) => JiraService.getWorklogsBy(key))
+    );
+
+    const worklogs: DailyWorklog = {};
+    worklogDetails.forEach((worklog) => {
+        Object.keys(worklog).forEach((key) => {
+          if (worklogs.hasOwnProperty(key)) {
+            worklogs[key] = [...worklogs[key], ...worklog[key]];
+          } else {
+            worklogs[key] = [...worklog[key]];
+          }
+        });  
+      });
     this.worklogRepository.save(worklogs);
   }
 }

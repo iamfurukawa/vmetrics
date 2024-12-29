@@ -14,4 +14,9 @@ export class LocalStorageService<T> {
         }
         return JSON.parse(value);
     }
+
+    clear(key: string): void {
+        if (typeof window === 'undefined') return;
+        localStorage.removeItem(key);
+    }
 }
