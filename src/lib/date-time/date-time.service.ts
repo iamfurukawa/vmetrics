@@ -18,10 +18,7 @@ class DateTimeService {
     const minutos = diferencaMinutos % 60;
 
     // Retornar no formato HH:mm
-    return `${String(horas).padStart(2, "0")}:${String(minutos).padStart(
-      2,
-      "0"
-    )}`;
+    return `${String(horas).padStart(2, "0")}:${String(minutos).padStart(2, "0" )}`;
   }
 
   timeSum(listaDeTempos: string[]): string {

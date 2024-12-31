@@ -1,9 +1,10 @@
 import axios from "axios";
+import { parse, format, differenceInSeconds } from "date-fns";
 
-import { WorklogLocalStorageService } from "../worklog/worklog-local-storage.service";
 import { AccountLocalStorageService } from "@/lib/account/account-local-storage.service";
 import ProjectService from "@/lib/project/project.service";
-import { Worklog } from "@/lib/worklog/worklog.interface";
+import { Worklog, WorklogStatus } from "@/lib/worklog/worklog.interface";
+import WorklogService from "@/lib/worklog/worklog.service";
 
 export interface IssueKeys {
   key: string;
@@ -14,11 +15,9 @@ export interface IssueKeys {
 class JiraService {
 
   accountRepository: AccountLocalStorageService;
-  worklogRepository: WorklogLocalStorageService;
 
   constructor() {
     this.accountRepository = new AccountLocalStorageService();
-    this.worklogRepository = new WorklogLocalStorageService();
   }
 
   generateAuthenticatedHeader(user: string, password: string): string {
@@ -99,73 +98,81 @@ class JiraService {
 
   async deleteBy(key: IssueKeys) {
     const project = ProjectService.getActive();
-    if (!project) return [];
+    await axios.delete(`/api/delete-worklog-by-key?key=${key.key}&id=${key.id}`, { 
+        headers: { 
+            "vmetrics-url": project!.jira.url,
+            "vmetrics-auth": this.generateAuthenticatedHeader(project!.email, project!.jira.apiKey),
 
-    await this.getMyUserId();
-    const accountId = this.accountRepository.get();
-    if (!accountId) return [];
+            "Content-Type": "application/json",
+        } 
+    })
+  }
 
+  async sync(worklog: Worklog, actualDate: string): Promise<Worklog> {
+    if(!this.shouldSync(worklog)) return worklog;
+    
     try {
-        await axios.delete(`/api/delete-worklog-by-key?key=${key.key}&id=${key.id}`, { 
-            headers: { 
-                "vmetrics-url": project.jira.url,
-                "vmetrics-auth": this.generateAuthenticatedHeader(project.email, project.jira.apiKey),
-                "vmetrics-account-id": accountId,
-
-                "Content-Type": "application/json",
-            } 
-        })
+      if(worklog.worklogId)
+        return await this.updateBy(worklog, actualDate);
+      return await this.create(worklog, actualDate);
     } catch (error) {
-        console.error(error);
+      return worklog;
     }
   }
 
-  async create(worklog: Worklog) {
+  async create(worklog: Worklog, actualDate: string): Promise<Worklog> {
     const project = ProjectService.getActive();
-    if (!project) return [];
+    const { data: { id } } = await axios.post(`/api/post-worklog?key=${worklog.ticket}`, this.worklogMapper(worklog, actualDate),
+      { 
+          headers: { 
+              "vmetrics-url": project!.jira.url,
+              "vmetrics-auth": this.generateAuthenticatedHeader(project!.email, project!.jira.apiKey),
 
-    try {
-        const { data } = await axios.post(`/api/get-worklog?key=${worklog.ticket}`, {
-          "comment": worklog.description,
-          "started": ,
-          "timeSpentSeconds": ,
-        },          
-        { 
-            headers: { 
-                "vmetrics-url": project.jira.url,
-                "vmetrics-auth": this.generateAuthenticatedHeader(project.email, project.jira.apiKey),
+              "Content-Type": "application/json",
+          } 
+      })
 
-                "Content-Type": "application/json",
-            } 
-        })
-        return data;
-    } catch (error) {
-        console.error(error);
-    }
+    worklog.worklogId = id;
+    worklog.status = WorklogStatus.SYNCED;
+    return worklog;
   }
 
-  async updateBy(worklog: Worklog) {
+  async updateBy(worklog: Worklog, actualDate: string): Promise<Worklog> {
     const project = ProjectService.getActive();
-    if (!project) return [];
+    await axios.put(`/api/put-worklog-by-key?key=${worklog.ticket}&id=${worklog.worklogId}`, this.worklogMapper(worklog, actualDate),          
+    { 
+        headers: { 
+            "vmetrics-url": project!.jira.url,
+            "vmetrics-auth": this.generateAuthenticatedHeader(project!.email, project!.jira.apiKey),
 
-    try {
-        const { data } = await axios.put(`/api/get-worklog?key=${worklog.ticket}&id=${worklog.worklogId}`, {
-          "comment": worklog.description,
-          "started": ,
-          "timeSpentSeconds": ,
-        },          
-        { 
-            headers: { 
-                "vmetrics-url": project.jira.url,
-                "vmetrics-auth": this.generateAuthenticatedHeader(project.email, project.jira.apiKey),
+            "Content-Type": "application/json",
+        } 
+    })
+    worklog.status = WorklogStatus.SYNCED;
+    return worklog;
+  }
 
-                "Content-Type": "application/json",
-            } 
-        })
-        return data;
-    } catch (error) {
-        console.error(error);
-    }
+  worklogMapper(worklog: Worklog, actualDate: string) {
+    const startTime = parse(`${actualDate} ${worklog.date.start}`, 'dd/MM/yyyy HH:mm', new Date());
+    const endTime = parse(`${actualDate} ${worklog.date.end}`, 'dd/MM/yyyy HH:mm', new Date());
+
+    const timeSpentSeconds = differenceInSeconds(endTime, startTime);
+    const started = format(startTime, "yyyy-MM-dd'T'HH:mm:ss.SSSXX");
+
+    return { timeSpentSeconds, started, comment: worklog.description, worklogId: worklog.worklogId };
+  }
+
+  shouldSync(worklog: Worklog) {
+    if(worklog.status === WorklogStatus.SYNCED) return false;
+    if(!worklog.date.end) return false;
+    if(worklog.description === "") return false;
+    if(worklog.ticket === "") return false;
+
+    const dateEnd = new Date(worklog.date.end);
+    const dateStart = new Date(worklog.date.start);
+    if(dateEnd < dateStart) return false;
+
+    return true;
   }
 }
 

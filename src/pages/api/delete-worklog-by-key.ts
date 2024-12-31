@@ -20,7 +20,7 @@ export default async function handler(
           "Content-Type": "application/json",
       },
     });
-    res.status(204);
+    res.status(204).end();
   } catch (error) {
     console.error("Error deleting worklog:", error);
     res.status(500).json({ error: "Failed to delete worklog" });

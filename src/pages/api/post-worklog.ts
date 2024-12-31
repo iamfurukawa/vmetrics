@@ -16,7 +16,7 @@ export default async function handler(
   }
 
   try {
-    const { data } = await axios.post(`https://${req.headers[Headers.VMETRICS_URL]}/rest/api/3/issue/${req.query['key']}/worklog`,
+    const { data: { id } } = await axios.post(`https://${req.headers[Headers.VMETRICS_URL]}/rest/api/2/issue/${req.query['key']}/worklog`,
     JSON.stringify({
       "comment": req.body['comment'],
       "started": req.body['started'],
@@ -30,7 +30,7 @@ export default async function handler(
       },
     });
 
-    res.status(200).json({id: data.id});
+    res.status(200).json({id});
   } catch (error) {
     console.error("Error create worklog:", error);
     res.status(500).json({ error: "Failed to create worklog" });

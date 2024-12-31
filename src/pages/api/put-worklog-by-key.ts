@@ -1,4 +1,5 @@
 import axios from "axios";
+import { format, add } from "date-fns";
 import { NextApiRequest, NextApiResponse } from "../../../node_modules/next/types";
 
 import { Headers } from "@/lib/requests/headers.enum";
@@ -12,7 +13,7 @@ export default async function handler(
   }
 
   try {
-    await axios.put(`https://${req.headers[Headers.VMETRICS_URL]}/rest/api/3/issue/${req.query['key']}/worklog/${req.query['id']}`,
+    await axios.put(`https://${req.headers[Headers.VMETRICS_URL]}/rest/api/2/issue/${req.query['key']}/worklog/${req.body['worklogId']}`,
       JSON.stringify({
         "comment": req.body['comment'],
         "started": req.body['started'],
@@ -25,7 +26,7 @@ export default async function handler(
             "Content-Type": "application/json",
         },
       });
-    res.status(204);
+    res.status(204).end();
   } catch (error) {
     console.error("Error on update worklog:", error);
     res.status(500).json({ error: "Failed to update worklog" });

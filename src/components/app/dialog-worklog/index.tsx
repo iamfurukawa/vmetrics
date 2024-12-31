@@ -73,12 +73,13 @@ export function DialogWorklog({
   }, [worklog, form]);
 
 
-  function onSubmit(data: z.infer<typeof FormSchema>) {
+  async function onSubmit(data: z.infer<typeof FormSchema>) {
     let worklogForm: Worklog = {
-      uuid: uuidv4(),
+      uuid: worklog?.uuid || uuidv4(),
       description: data.description,
       ticket: data.ticket,
       status: WorklogStatus.PENDING,
+      worklogId: worklog?.worklogId || undefined,
       date: {
         start: data.start,
         end: data.end,
@@ -86,9 +87,9 @@ export function DialogWorklog({
     };
 
     if (worklog) {
-      WorklogService.updateBy(worklogForm, date, worklog!.uuid!);
+      await WorklogService.updateBy(worklogForm, date);
     } else {
-      WorklogService.create(worklogForm, date);
+      await WorklogService.create(worklogForm, date);
     }
     
     toast({
@@ -144,7 +145,7 @@ export function DialogWorklog({
                       <FormItem>
                         <FormLabel>Card</FormLabel>
                         <FormControl>
-                          <Input placeholder="E.g. COREP-1234" {...field} />
+                          <Input placeholder="E.g. COREP-1234" {...field} disabled={worklog?.worklogId}/>
                         </FormControl>
                         <FormMessage />
                       </FormItem>

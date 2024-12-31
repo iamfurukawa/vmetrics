@@ -88,30 +88,32 @@ export default function Home() {
 	const worklogsDeltas = worklogs
 		.filter((worklog) => worklog.date.end)
 		.map((worklog) => DateTimeService.timeDelta(worklog.date.start, worklog.date.end!));
-
-	return DateTimeService.timeSum(worklogsDeltas);
+	const sum = DateTimeService.timeSum(worklogsDeltas);
+	return sum || "00:00";
   }
 
   function continueOn(worklog: Worklog, date: string) {
 	cloneTo({
 		description: worklog.description,
 		ticket: worklog.ticket,
+		status: WorklogStatus.PENDING,
 		date: {
 			start: format(new Date(), "HH:mm"),
 		}
 	}, date);
   }
 
-  function stop(worklog: Worklog) {
-	WorklogService.stopAt(format(actualDate, "dd/MM/yyyy"), worklog.uuid!);
+  async function stop(worklog: Worklog) {
+	worklog.date.end = format(new Date(), "HH:mm");
+	await WorklogService.updateBy(worklog, format(actualDate, "dd/MM/yyyy"));
 	loadWorklogs();
   }
 
-  function remove(worklog: Worklog, isConfirmed: boolean) {
+  async function remove(worklog: Worklog, isConfirmed: boolean) {
 	if(!isConfirmed) return;
 
 	const date = format(actualDate, "dd/MM/yyyy");
-	WorklogService.deleteBy(date, worklog.uuid!);
+	await WorklogService.deleteBy(worklog, date);
 	
 	toast({
 		title: `Worklog removed successfully`,
@@ -121,8 +123,16 @@ export default function Home() {
 	loadWorklogs();
   }
 
-  function cloneTo(worklog: Worklog, date: string) {
-	WorklogService.create(worklog, date);
+  async function cloneTo(worklog: Worklog, date: string) {
+	await WorklogService.create({
+		description: worklog.description,
+		ticket: worklog.ticket,
+		status: WorklogStatus.PENDING,
+		date: {
+			start: worklog.date.start,
+			end: worklog.date.end,
+		},
+	}, date);
 
 	toast({
 		title: `Worklog created successfully`,
@@ -193,9 +203,9 @@ export default function Home() {
 			  	.sort(DateTimeService.timeSort)
 			  	.map((worklog) => (
 				<TableRow key={worklog.uuid}>
-				  <TableCell className="font-medium">{`${worklog.ticket} - ${worklog.description}`}</TableCell>
+				  <TableCell className="font-medium">{`${worklog.ticket ? `${worklog.ticket} - ` : ""}${worklog.description}`}</TableCell>
 				  <TableCell className="font-medium"> {" "} <Badge variant={ worklog.status === WorklogStatus.PENDING ? "destructive" : "default" }> {worklog.status} </Badge>{" "} </TableCell>
-				  <TableCell className="font-medium">{`${worklog.date.start}h ${worklog.date.end ? ` - ${worklog.date.end}h (${DateTimeService.timeDelta(worklog.date.start, worklog.date.end)}h)` : "" }`}</TableCell>
+				  <TableCell className="font-medium">{`${worklog.date.start ? `${worklog.date.start}h` : ""} ${worklog.date.end ? ` - ${worklog.date.end}h (${DateTimeService.timeDelta(worklog.date.start, worklog.date.end)}h)` : "" }`}</TableCell>
 				  <TableCell>
 					<DropdownMenu>
 					  <DropdownMenuTrigger asChild>
@@ -214,9 +224,11 @@ export default function Home() {
 								<StepForward/> Continue task {format(actualDate, "dd/MM/yyyy")} 
 							</DropdownMenuItem>
 						}
+						{ !worklog.date.end &&
 						<DropdownMenuItem onClick={() => stop(worklog)} >
 							<Pause/> Stop task 
 						</DropdownMenuItem>
+						}
 						<DropdownMenuSeparator/>
 						<DropdownMenuItem onClick={() => {
 							setCurrentWorklog(worklog);

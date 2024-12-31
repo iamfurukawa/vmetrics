@@ -5,7 +5,6 @@ import { WorklogLocalStorageService } from "./worklog-local-storage.service";
 import { DailyWorklog, Worklog, WorklogStatus } from "./worklog.interface";
 import JiraService from "@/lib/jira/jira.service";
 
-
 class WorklogService {
   worklogRepository: WorklogLocalStorageService;
 
@@ -14,16 +13,15 @@ class WorklogService {
   }
 
   getAllBy(date: string): Worklog[] {
-      const worklogsStoraged = this.worklogRepository.get() || {};
-      return worklogsStoraged[date] || []
+    const worklogsStoraged = this.worklogRepository.get() || {};
+    return worklogsStoraged[date] || [];
   }
 
-  create(worklog: Worklog, date: string) {
+  async create(worklog: Worklog, date: string) {
     const worklogs = this.worklogRepository.get() || {};
 
     worklog.uuid = uuidv4();
     worklog.status = worklog.status || WorklogStatus.PENDING;
-    worklog.date.end = undefined;
 
     if (worklogs.hasOwnProperty(date)) {
       worklogs[date] = [...worklogs[date], worklog];
@@ -32,38 +30,35 @@ class WorklogService {
     }
 
     this.worklogRepository.save(worklogs);
+
+    await this.updateBy(worklog, date);
   }
 
-  updateBy(worklog: Worklog, date: string, uuid: string) {
+  async updateBy(worklog: Worklog, date: string): Promise<Worklog | undefined> {
+    const worklogSynced = await JiraService.sync(worklog, date);
+
     const worklogs = this.worklogRepository.get() || {};
     worklogs[date] = worklogs[date].map((w) => {
-      if (w.uuid === uuid) {
-        w.description = worklog.description;
-        w.date.start = worklog.date.start;
-        w.date.end = worklog.date.end;
-        w.ticket = worklog.ticket;
-        w.status = WorklogStatus.PENDING;
+      if (w.uuid === worklogSynced.uuid) {
+        w.description = worklogSynced.description;
+        w.date.start = worklogSynced.date.start;
+        w.date.end = worklogSynced.date.end;
+        w.ticket = worklogSynced.ticket;
+        w.status = worklogSynced.status;
+        w.worklogId = worklogSynced.worklogId || w.worklogId;
       }
       return w;
     });
     this.worklogRepository.save(worklogs);
+
+    return worklogSynced;
   }
 
-  deleteBy(date: string, uuid: string) {
-    const worklogs = this.worklogRepository.get() || {};
-    worklogs[date] = worklogs[date].filter((w) => w.uuid !== uuid);
-    this.worklogRepository.save(worklogs);
-  }
+  async deleteBy(worklog: Worklog, date: string) {
+    await JiraService.deleteBy({ key: worklog.ticket, id: worklog.worklogId });
 
-  stopAt(date: string, uuid: string) {
     const worklogs = this.worklogRepository.get() || {};
-    worklogs[date] = worklogs[date].map((w) => {
-      if (w.uuid === uuid) {
-        w.date.end = format(new Date(), "HH:mm");
-        w.status = WorklogStatus.PENDING;
-      }
-      return w;
-    });
+    worklogs[date] = worklogs[date].filter((w) => w.uuid !== worklog.uuid);
     this.worklogRepository.save(worklogs);
   }
 
@@ -75,14 +70,14 @@ class WorklogService {
 
     const worklogs: DailyWorklog = {};
     worklogDetails.forEach((worklog) => {
-        Object.keys(worklog).forEach((key) => {
-          if (worklogs.hasOwnProperty(key)) {
-            worklogs[key] = [...worklogs[key], ...worklog[key]];
-          } else {
-            worklogs[key] = [...worklog[key]];
-          }
-        });  
+      Object.keys(worklog).forEach((key) => {
+        if (worklogs.hasOwnProperty(key)) {
+          worklogs[key] = [...worklogs[key], ...worklog[key]];
+        } else {
+          worklogs[key] = [...worklog[key]];
+        }
       });
+    });
     this.worklogRepository.save(worklogs);
   }
 }

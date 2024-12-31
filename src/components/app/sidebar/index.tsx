@@ -30,6 +30,7 @@ import {
 
 import { DialogProject } from "@/components/app/dialog-project";
 import { DialogSignOut } from "@/components/app/dialog-sign-out";
+import { AlertConfirmAction } from "@/components/app/alert-confirm-action/index";
 
 import JiraService from "@/lib/jira/jira.service";
 import ProjectService from "@/lib/project/project.service";
@@ -39,9 +40,11 @@ import WorklogService from "@/lib/worklog/worklog.service";
 export function AppSidebar() {
   const [isDialogProjectOpened, setDialogProjectOpened] = useState(false);
   const [isDialogSignOutOpened, setDialogSignOutOpened] = useState(false);
+  const [isAlertConfirmationOpened, setAlertConfirmationOpened] = useState(false);
   const [activeProject, setActiveProject] = useState<Project | null>(ProjectService.getActive());
 
-  async function handleDownloadSync() {
+  async function handleDownloadSync(isConfirmed: boolean) {
+    if(!isConfirmed) return;
     WorklogService.retrieveLastsTwoWeeksWorklogs();
   }
 
@@ -60,6 +63,7 @@ export function AppSidebar() {
 
   return (
     <>
+    <AlertConfirmAction isOpened={isAlertConfirmationOpened} setOpened={setAlertConfirmationOpened} confirmAction={handleDownloadSync} customMessage={'THIS WILL BE OVERWRITTEN ALL WORKLOGS!'}/>
     <DialogProject isOpened={isDialogProjectOpened} setOpened={setDialogProjectOpened} project={activeProject}/>
     <DialogSignOut isOpened={isDialogSignOutOpened} setOpened={setDialogSignOutOpened}/>
     <Sidebar collapsible="icon">
@@ -70,7 +74,7 @@ export function AppSidebar() {
             <SidebarMenu>
                 <SidebarMenuItem key="jira-download">
                   <SidebarMenuButton asChild>
-                    <a href={'#'} onClick={handleDownloadSync}>
+                    <a href={'#'} onClick={() => setAlertConfirmationOpened(true)}>
                       <CloudDownload />
                       <span>Jira Download</span>
                     </a>
