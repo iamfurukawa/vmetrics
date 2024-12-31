@@ -28,6 +28,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+import { toast } from "@/hooks/use-toast";
+
 import { DialogProject } from "@/components/app/dialog-project";
 import { DialogSignOut } from "@/components/app/dialog-sign-out";
 import { AlertConfirmAction } from "@/components/app/alert-confirm-action/index";
@@ -45,7 +47,11 @@ export function AppSidebar() {
 
   async function handleDownloadSync(isConfirmed: boolean) {
     if(!isConfirmed) return;
-    WorklogService.retrieveLastsTwoWeeksWorklogs();
+    await WorklogService.retrieveLastsTwoWeeksWorklogs();
+
+    toast({
+      title: `Worklog downloaded successfully!`,
+    });
   }
 
   useEffect(() => {
