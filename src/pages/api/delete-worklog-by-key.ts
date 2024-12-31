@@ -1,14 +1,15 @@
 import axios from "axios";
+import { v4 as uuidv4 } from "uuid";
 import { NextApiRequest, NextApiResponse } from "../../../node_modules/next/types";
 
 import { Headers } from "@/lib/requests/headers.enum";
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse) {
-
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  const requestId = uuidv4();
+  console.log(`[${requestId}][${req.method}] ${req.url} headers=${JSON.stringify(req.headers, null, 2)} body=${JSON.stringify(req.body, null, 2)} m=delete-worklog-by-key stage=init`);
   if (req.method !== "DELETE") {
-    return res.status(405).json({ error: "Method not allowed" });
+    console.error(`[${requestId}] m=delete-worklog-by-key stage=error error=Method not allowed`);
+    return res.status(405).json({ error: "Method not allowed", requestId });
   }
 
   try {
@@ -20,9 +21,11 @@ export default async function handler(
           "Content-Type": "application/json",
       },
     });
+
+    console.log(`[${requestId}] m=delete-worklog-by-key stage=end message=Worklog deleted successfully`);
     res.status(204).end();
   } catch (error) {
-    console.error("Error deleting worklog:", error);
-    res.status(500).json({ error: "Failed to delete worklog" });
+    console.error(`[${requestId}] m=delete-worklog-by-key stage=error error=${JSON.stringify(error)}`);
+    res.status(500).json({ error: "Failed to delete worklog", requestId });
   }
 }

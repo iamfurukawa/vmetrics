@@ -142,6 +142,11 @@ export default function Home() {
 	loadWorklogs();
   }
 
+  async function retrySync(worklog: Worklog) {
+	await WorklogService.updateBy(worklog, format(actualDate, "dd/MM/yyyy"));
+	loadWorklogs();
+  }
+
   return (
 	<>
 	  <AlertConfirmAction isOpened={isAlertConfirmationOpened} setOpened={setAlertConfirmationOpened} confirmAction={(isConfirmed: boolean) => remove(currentWorklog!, isConfirmed)}/>
@@ -253,7 +258,7 @@ export default function Home() {
 						{ worklog.status === WorklogStatus.PENDING &&
 							<>
 								<DropdownMenuSeparator/>
-								<DropdownMenuItem onClick={() => {}} >
+								<DropdownMenuItem onClick={() => retrySync(worklog)} >
 									<StepForward/> Sync
 								</DropdownMenuItem>
 							</>

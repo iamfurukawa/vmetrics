@@ -26,7 +26,7 @@ import { Input } from "@/components/ui/input";
 
 import { Button } from "@/components/ui/button";
 
-import { AlertConfirmAction } from "../alert-confirm-action/index";
+import { AlertConfirmAction } from "@/components/app/alert-confirm-action/index";
 
 import { toast } from "@/hooks/use-toast";
 

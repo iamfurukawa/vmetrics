@@ -1,6 +1,6 @@
-import { LocalStorage } from "../local-storage/local-storage.interface";
-import { LocalStorageKeys } from "../local-storage/local-storage.keys";
-import { LocalStorageService } from "../local-storage/local-storage.service";
+import { LocalStorage } from "@/lib/local-storage/local-storage.interface";
+import { LocalStorageKeys } from "@/lib/local-storage/local-storage.keys";
+import { LocalStorageService } from "@/lib/local-storage/local-storage.service";
 import { Project } from "./project.interface";
 
 export class ProjectLocalStorageService implements LocalStorage<Project[]> {

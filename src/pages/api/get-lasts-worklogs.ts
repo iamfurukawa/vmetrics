@@ -1,9 +1,8 @@
 import axios from "axios";
+import { v4 as uuidv4 } from "uuid";
 import { NextApiRequest, NextApiResponse } from "../../../node_modules/next/types";
 
-import { Worklog } from "@/lib/worklog/worklog.interface";
 import { Headers } from "@/lib/requests/headers.enum";
-import worklogService from "@/lib/worklog/worklog.service";
 
 export interface WorklogKeys {
   worklogs: {
@@ -12,12 +11,13 @@ export interface WorklogKeys {
   }[]
 }
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse<WorklogKeys>) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse<WorklogKeys>) {
+  const requestId = uuidv4();
+  console.log(`[${requestId}][${req.method}] ${req.url} headers=${JSON.stringify(req.headers, null, 2)} body=${JSON.stringify(req.body, null, 2)} m=get-lasts-worklogs stage=init`);
 
   if (req.method !== "GET") {
-    return res.status(405).json({ error: "Method not allowed" });
+    console.error(`[${requestId}] m=get-lasts-worklogs stage=error error=Method not allowed`);
+    return res.status(405).json({ error: "Method not allowed", requestId });
   }
 
   try {
@@ -35,10 +35,10 @@ export default async function handler(
     });
     const worklogs = data.issues.map((worklog: any) => ({key: worklog.key, summary: worklog.fields.summary}));
 
-    //const worklogs = [{key: 'COREP-6399', summary: "COREP - Meetings"}, {key: 'COREP-6399', summary: "COREP - Meetings"}];
+    console.log(`[${requestId}] m=get-lasts-worklogs stage=end message=${JSON.stringify(worklogs)}`);
     res.status(200).json({worklogs});
   } catch (error) {
-    console.error("Error fetching worklogs:", error);
-    res.status(500).json({ error: "Failed to fetch worklogs" });
+    console.error(`[${requestId}] m=get-lasts-worklogs stage=error error=${JSON.stringify(error)}`);
+    res.status(500).json({ error: "Failed to fetch worklogs", requestId });
   }
 }

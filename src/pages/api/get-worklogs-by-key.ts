@@ -6,12 +6,13 @@ import { NextApiRequest, NextApiResponse } from "../../../node_modules/next/type
 import { DailyWorklog, WorklogStatus } from "@/lib/worklog/worklog.interface";
 import { Headers } from "@/lib/requests/headers.enum";
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse<DailyWorklog>) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse<DailyWorklog>) {
+  const requestId = uuidv4();
+  console.log(`[${requestId}][${req.method}] ${req.url} headers=${JSON.stringify(req.headers, null, 2)} body=${JSON.stringify(req.body, null, 2)} m=get-worklogs-by-key stage=init`);
 
   if (req.method !== "GET") {
-    return res.status(405).json({ error: "Method not allowed" });
+    console.error(`[${requestId}] m=get-worklogs-by-key stage=error error=Method not allowed`);
+    return res.status(405).json({ error: "Method not allowed", requestId });
   }
 
   try {
@@ -38,17 +39,6 @@ export default async function handler(
         },
         key: format(new Date(worklog.started), "dd/MM/yyyy"),
       }))
-    // const worklogsFiltered = [
-    //   {
-    //     uuid: '8c827daf-ffe2-46e4-ac30-eedf27b2423b',
-    //     worklogId: '198120',
-    //     status: 'SYNCED',
-    //     ticket: 'COREP-6399',
-    //     description: 'Pre Planning',
-    //     date: { start: '14:00', end: '15:30' },
-    //     key: "27/12/2024"
-    //   }
-    // ]
 
     let worklogs: DailyWorklog = {}
     worklogsFiltered.forEach((worklog: any) => {
@@ -58,9 +48,11 @@ export default async function handler(
         worklogs[worklog.key] = [worklog];
       }
     });
+
+    console.log(`[${requestId}] m=get-worklogs-by-key stage=end message=${JSON.stringify(worklogs)}`);
     res.status(200).json(worklogs);
   } catch (error) {
-    console.error("Error fetching worklogs:", error);
-    res.status(500).json({ error: "Failed to fetch worklogs" });
+    console.error(`[${requestId}] m=get-worklogs-by-key stage=error error=${JSON.stringify(error)}`);
+    res.status(500).json({ error: "Failed to fetch worklogs", requestId });
   }
 }

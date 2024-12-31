@@ -36,7 +36,7 @@ class WorklogService {
 
   async updateBy(worklog: Worklog, date: string): Promise<Worklog | undefined> {
     const worklogSynced = await JiraService.sync(worklog, date);
-
+    
     const worklogs = this.worklogRepository.get() || {};
     worklogs[date] = worklogs[date].map((w) => {
       if (w.uuid === worklogSynced.uuid) {
@@ -55,7 +55,9 @@ class WorklogService {
   }
 
   async deleteBy(worklog: Worklog, date: string) {
-    await JiraService.deleteBy({ key: worklog.ticket, id: worklog.worklogId });
+    if(worklog.worklogId) {
+      await JiraService.deleteBy({ key: worklog.ticket, id: worklog.worklogId });
+    }
 
     const worklogs = this.worklogRepository.get() || {};
     worklogs[date] = worklogs[date].filter((w) => w.uuid !== worklog.uuid);

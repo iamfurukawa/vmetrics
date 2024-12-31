@@ -1,4 +1,4 @@
-import { Worklog } from "../worklog/worklog.interface";
+import { Worklog } from "@/lib/worklog/worklog.interface";
 
 class DateTimeService {
   timeDelta(hora1: string, hora2: string): string {
@@ -49,6 +49,16 @@ class DateTimeService {
     const startB = h2 * 60 + m2; // Converter para minutos
 
     return startA - startB; // Ordenar em ordem crescente
+  }
+
+  isEndBeforeStart(start: string, end: string): boolean {
+    const [startHours, startMinutes] = start.split(":").map(Number);
+    const [endHours, endMinutes] = end.split(":").map(Number);
+  
+    const startTimeInMinutes = startHours * 60 + startMinutes;
+    const endTimeInMinutes = endHours * 60 + endMinutes;
+  
+    return endTimeInMinutes < startTimeInMinutes;
   }
 }
 

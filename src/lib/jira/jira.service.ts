@@ -4,7 +4,7 @@ import { parse, format, differenceInSeconds } from "date-fns";
 import { AccountLocalStorageService } from "@/lib/account/account-local-storage.service";
 import ProjectService from "@/lib/project/project.service";
 import { Worklog, WorklogStatus } from "@/lib/worklog/worklog.interface";
-import WorklogService from "@/lib/worklog/worklog.service";
+import DateTimeService from "../date-time/date-time.service";
 
 export interface IssueKeys {
   key: string;
@@ -167,10 +167,7 @@ class JiraService {
     if(!worklog.date.end) return false;
     if(worklog.description === "") return false;
     if(worklog.ticket === "") return false;
-
-    const dateEnd = new Date(worklog.date.end);
-    const dateStart = new Date(worklog.date.start);
-    if(dateEnd < dateStart) return false;
+    if(DateTimeService.isEndBeforeStart(worklog.date.start, worklog.date.end)) return false;
 
     return true;
   }
