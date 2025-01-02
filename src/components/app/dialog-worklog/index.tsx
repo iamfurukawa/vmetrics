@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 
+import { format } from "date-fns";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -67,7 +68,7 @@ export function DialogWorklog({
     form.reset({
       description: worklog?.description || "",
       ticket: worklog?.ticket || "",
-      start: worklog?.date?.start || "",
+      start: worklog?.date?.start || format(new Date(), "HH:mm"),
       end: worklog?.date?.end || "",
     });
   }, [worklog, form]);
@@ -96,7 +97,10 @@ export function DialogWorklog({
       title: `Worklog ${worklog ? `updated` : `created`} successfully`,
       description: `${worklog ? `${worklog.description}` : `${worklogForm.description}`}`,
     });
-
+    
+    form.reset('', {
+      keepValues: false,
+    })
     setOpened(false);
   }
 
@@ -107,6 +111,12 @@ export function DialogWorklog({
       shouldValidate: true,
       shouldDirty: true,
     });
+  };
+
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLFormElement>) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+    }
   };
 
   return (
@@ -130,6 +140,7 @@ export function DialogWorklog({
                         <Input
                           placeholder="Create a new bug in production"
                           {...field}
+                          onKeyDown={handleKeyDown}
                         />
                       </FormControl>
                       <FormMessage />
@@ -145,7 +156,7 @@ export function DialogWorklog({
                       <FormItem>
                         <FormLabel>Card</FormLabel>
                         <FormControl>
-                          <Input placeholder="E.g. COREP-1234" {...field} disabled={worklog?.worklogId}/>
+                          <Input placeholder="E.g. COREP-1234" {...field} disabled={worklog?.worklogId} onKeyDown={handleKeyDown}/>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -163,6 +174,7 @@ export function DialogWorklog({
                             placeholder="HH:MM"
                             {...field}
                             onChange={handleInputTimeChange}
+                            onKeyDown={handleKeyDown}
                           />
                         </FormControl>
                         <FormMessage />
@@ -181,6 +193,7 @@ export function DialogWorklog({
                             placeholder="HH:MM"
                             {...field}
                             onChange={handleInputTimeChange}
+                            onKeyDown={handleKeyDown}
                           />
                         </FormControl>
                         <FormMessage />
