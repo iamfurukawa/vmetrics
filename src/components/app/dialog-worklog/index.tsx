@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import { format } from "date-fns";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -48,6 +48,8 @@ export function DialogWorklog({
   date,
 }: WorklogProps) {
 
+  const [disabled, setDisabled] = useState(false);
+
   const FormSchema = z.object({
     description: z
       .string()
@@ -75,6 +77,7 @@ export function DialogWorklog({
 
 
   async function onSubmit(data: z.infer<typeof FormSchema>) {
+    setDisabled(true);
     let worklogForm: Worklog = {
       uuid: worklog?.uuid || uuidv4(),
       description: data.description,
@@ -101,6 +104,7 @@ export function DialogWorklog({
     form.reset('', {
       keepValues: false,
     })
+    setDisabled(false);
     setOpened(false);
   }
 
@@ -201,7 +205,7 @@ export function DialogWorklog({
                     )}
                   />
                 </div>
-                <Button type="submit">Save</Button>
+                <Button type="submit" disabled={disabled}>Save</Button>
               </form>
             </Form>
           </DialogDescription>
